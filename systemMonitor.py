@@ -33,6 +33,8 @@ class MainWindow(QMainWindow):
         # self.ui = Ui_MainWindow()
         # self.ui.setupUi(self)
         self.ui = uic.loadUi("main.ui", self)
+        self.cpu_percent = 0
+        self.ram_percent = 0
         self.traces = dict()
         self.timestamp = 0
         self.timeaxis = []
@@ -101,7 +103,6 @@ class MainWindow(QMainWindow):
         self.deque_ram.append(self.ram_percent)
         timeaxis_list = list(self.deque_timestamp)
         cpu_list = list(self.deque_cpu)
-        # print(len(cpu_list), len(timeaxis_list))
 
         if self.timestamp > self.graph_lim:
             self.graphwidget1.setRange(xRange=[self.timestamp-self.graph_lim+1, self.timestamp], yRange=[
