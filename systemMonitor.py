@@ -25,6 +25,8 @@ from collections import deque
 # GLOBALS
 counter = 0
 jumper = 10
+QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True) #enable highdpi scaling
+QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True) #use highdpi icons
 
 
 class MainWindow(QMainWindow):
