@@ -3,5 +3,9 @@ __pycache__/
 .DS_Store
 .pytest_cache/
 .venv/
+venv/
+qt_runtime/
+.system-monitor.pid
+.system-monitor.log
 *.csv
 systemApp/

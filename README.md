@@ -10,9 +10,10 @@ I built this desktop app to track live machine health with a fast PyQt5 dashboar
 
 ## Features
 - Live CPU and RAM circular usage indicators
-- Toggleable CPU/RAM time-series graph with rolling history
+- Toggleable CPU, RAM, or combined CPU+RAM time-series graph with rolling history
 - Disk usage, process count, and network throughput strip
 - Uptime and capture timestamp visibility
+- Resizable dashboard window with maximize and minimize support
 - Splash screen startup flow
 - Optional CSV telemetry export
 
@@ -28,6 +29,7 @@ python systemMonitor.py
 ```bash
 make install
 make run
+make run APP_ARGS="--start-maximized"
 make status
 make close
 ```
@@ -36,6 +38,7 @@ make close
 - I designed the app itself to run on macOS, Linux, and Windows.
 - I currently use a Unix-style `Makefile`, so `make install/run/close/status` is for macOS and Linux.
 - On Windows, I run the same app with Python commands directly.
+- On macOS, `make run` automatically stages Qt runtime plugins into `qt_runtime/` to avoid Cocoa plugin issues from hidden virtualenv paths.
 
 ### Windows Quick Start (PowerShell)
 ```powershell
@@ -50,6 +53,7 @@ python systemMonitor.py
 python systemMonitor.py --interval-ms 1000 --history-seconds 30
 python systemMonitor.py --export-csv data/metrics.csv
 python systemMonitor.py --no-splash
+python systemMonitor.py --start-maximized
 ```
 
 ## Repository Layout
@@ -74,5 +78,5 @@ python -m unittest discover -s tests
 ```
 
 <p align="center">
-  <img width="80%" src="docs/screenShot1.jpg" alt="System Monitor screenshot">
+  <img width="80%" src="docs/screenShot2.png" alt="System Monitor screenshot">
 </p>

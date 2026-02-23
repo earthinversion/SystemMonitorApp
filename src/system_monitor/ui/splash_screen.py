@@ -54,7 +54,10 @@ class SplashScreen(QMainWindow):
             self.timer.stop()
             if self.main_window is None:
                 self.main_window = self.window_factory()
-            self.main_window.show()
+            if getattr(self.main_window, "start_maximized", False):
+                self.main_window.showMaximized()
+            else:
+                self.main_window.show()
             self.close()
 
         self._counter += 0.5

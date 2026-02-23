@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import os
 from pathlib import Path
+import shutil
 import sys
+import tempfile
 
 import PyQt5
 from PyQt5 import QtCore
@@ -39,6 +41,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Start directly with the dashboard window.",
     )
+    parser.add_argument(
+        "--start-maximized",
+        action="store_true",
+        help="Open the dashboard in maximized mode.",
+    )
     return parser
 
 
@@ -48,11 +55,41 @@ def configure_qt_plugin_paths() -> None:
     if not platform_root.exists():
         return
 
+    effective_plugin_root = plugin_root
+    effective_platform_root = platform_root
+
+    # On macOS, Qt can fail to discover plugins when they're under a hidden path (like `.venv`).
+    # I stage platform plugins into a visible runtime path so the Cocoa plugin can be loaded reliably.
+    if sys.platform == "darwin" and any(part.startswith(".") for part in plugin_root.parts):
+        runtime_root = Path(tempfile.gettempdir()) / "system-monitor-qt-runtime"
+        runtime_plugin_root = runtime_root / "plugins"
+        runtime_platform_root = runtime_plugin_root / "platforms"
+        runtime_platform_root.mkdir(parents=True, exist_ok=True)
+
+        for dylib in platform_root.glob("*.dylib"):
+            shutil.copy2(dylib, runtime_platform_root / dylib.name)
+
+        qt_lib_root = plugin_root.parent / "lib"
+        runtime_lib_link = runtime_root / "lib"
+        if qt_lib_root.exists():
+            if runtime_lib_link.exists() or runtime_lib_link.is_symlink():
+                if runtime_lib_link.is_symlink() and runtime_lib_link.resolve() == qt_lib_root.resolve():
+                    pass
+                elif runtime_lib_link.is_symlink() or runtime_lib_link.is_file():
+                    runtime_lib_link.unlink()
+                else:
+                    shutil.rmtree(runtime_lib_link)
+            if not runtime_lib_link.exists():
+                runtime_lib_link.symlink_to(qt_lib_root, target_is_directory=True)
+
+        effective_plugin_root = runtime_plugin_root
+        effective_platform_root = runtime_platform_root
+
     if not os.environ.get("QT_PLUGIN_PATH", "").strip():
-        os.environ["QT_PLUGIN_PATH"] = str(plugin_root)
+        os.environ["QT_PLUGIN_PATH"] = str(effective_plugin_root)
     if not os.environ.get("QT_QPA_PLATFORM_PLUGIN_PATH", "").strip():
-        os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = str(platform_root)
-    QtCore.QCoreApplication.addLibraryPath(str(plugin_root))
+        os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = str(effective_platform_root)
+    QtCore.QCoreApplication.addLibraryPath(str(effective_plugin_root))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -72,11 +109,15 @@ def main(argv: list[str] | None = None) -> int:
             history_seconds=args.history_seconds,
             poll_interval_ms=args.interval_ms,
             exporter=exporter,
+            start_maximized=args.start_maximized,
         )
 
     if args.no_splash:
         window = create_main_window()
-        window.show()
+        if args.start_maximized:
+            window.showMaximized()
+        else:
+            window.show()
         return app.exec_()
 
     splash = SplashScreen(window_factory=create_main_window)
