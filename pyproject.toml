@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "system-monitor-app"
+version = "0.2.0"
+description = "I monitor CPU, RAM, disk, and network usage with a PyQt dashboard."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{name = "Utpal Kumar"}]
+dependencies = [
+  "psutil>=5.9",
+  "PyQt5>=5.15",
+  "pyqtgraph>=0.13"
+]
+
+[project.scripts]
+system-monitor = "system_monitor.app:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
